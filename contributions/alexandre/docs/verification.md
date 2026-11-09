@@ -60,3 +60,9 @@ OK
 ```
 
 Les 42 tests réussissent sans test ignoré, dont les six tests PostgreSQL. Aucun changement de code n’a été effectué après cette validation ; seules les notes de suivi ont été actualisées. La carte reste un export historique, sans rafraîchissement automatique ni rejeu animé.
+
+
+## Rejeu des observations — 9 novembre 2026
+Ajout dans contributions/alexandre : lecture/pause, curseur UTC, vitesses 1× à 60×, retour au début et repère violet sans interpolation. Les interruptions de plus de cinq minutes sont signalées.
+
+Validation locale : 36 tests Python réussis ; 6 tests PostgreSQL ignorés faute de connexion dans cette exécution (leur validation précédente ne couvre pas cette nouvelle exécution). Les 6 tests Node du moteur temporel réussissent : sélection temporelle, vitesse, fin, déplacement du curseur, interruptions et données limites. Interface à confirmer manuellement dans le navigateur.

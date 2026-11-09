@@ -57,7 +57,8 @@ def export_map(conn=None, output="maps/carte.html", source="opensky",
     # Même un indicatif malveillant ne peut pas fermer le bloc JSON de la page.
     payload = json.dumps(data, ensure_ascii=True, allow_nan=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
     template = (Path(__file__).parent / "templates" / "map.html").read_text(encoding="utf-8")
-    rendered = template.replace("__AEROSAFE_DATA__", payload)
+    replay = (Path(__file__).parent / "templates" / "replay.js").read_text(encoding="utf-8")
+    rendered = template.replace("__AEROSAFE_REPLAY__", replay).replace("__AEROSAFE_DATA__", payload)
     destination = Path(output)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(rendered, encoding="utf-8")

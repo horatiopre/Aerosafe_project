@@ -60,6 +60,9 @@ class MapTests(unittest.TestCase):
             self.assertEqual(result['positions'],1)
             self.assertIn('\\u003c/script\\u003e',html)
             self.assertNotIn('__AEROSAFE_DATA__',html)
+            self.assertNotIn('__AEROSAFE_REPLAY__',html)
+            self.assertIn('class ReplayClock',html)
+            self.assertIn('id="timeline"',html)
         finally:
             assert directory.name.startswith('aerosafe-map-test-')
             shutil.rmtree(directory)

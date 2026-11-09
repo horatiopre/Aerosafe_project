@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
 :root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#13293e;background:#edf2f5;font-size:14px}*{box-sizing:border-box}body{margin:0}header{background:#10283f;color:white;padding:23px 30px;display:flex;justify-content:space-between;align-items:center;gap:20px}h1{font-size:24px;letter-spacing:-.6px;margin:0 0 6px}header p{color:#becddb;margin:0;font-size:13px}.tag{padding:8px 12px;border:1px solid #547084;border-radius:30px;font-size:12px;white-space:nowrap}.layout{display:grid;grid-template-columns:340px 1fr;min-height:calc(100vh - 99px)}aside{background:#fff;border-right:1px solid #dbe3e9;padding:24px;overflow:auto;max-height:calc(100vh - 99px)}.eyebrow{font-size:11px;font-weight:700;letter-spacing:1.4px;color:#527083;text-transform:uppercase}h2{font-size:21px;margin:8px 0 20px}label{display:block;font-weight:600;margin:17px 0 8px}input[type=search],select{width:100%;border:1px solid #c7d3dc;border-radius:8px;padding:11px;background:#fff;font:inherit;color:inherit}select{height:44px}.stats{display:flex;gap:24px;margin:20px 0;padding-bottom:20px;border-bottom:1px solid #e6edf1}.stats strong{display:block;font-size:25px}.muted{color:#587083;font-size:12px;line-height:1.6}.note{font-size:12px;line-height:1.6;color:#587083;margin:18px 0}button{border:0;background:#087b83;color:white;padding:11px 15px;border-radius:8px;cursor:pointer;font:inherit;font-weight:600;width:100%;margin:12px 0}button:hover{background:#08636a}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #f7b64a;outline-offset:2px}button:disabled{opacity:.4;cursor:default}#map{height:calc(100vh - 99px);min-height:450px;background:#e1e9ed}.mapwrap{position:relative}#warning{position:absolute;top:15px;left:55px;right:18px;z-index:1000;background:#fff8dc;border:1px solid #dfca81;padding:12px;border-radius:8px;font-size:12px;line-height:1.5}#warning[hidden]{display:none}dl{margin:14px 0;display:grid;grid-template-columns:1fr 1fr;gap:10px}dt{font-size:12px;color:#587083}dd{margin:0;font-weight:600;font-size:14px}.check{font-weight:400;font-size:12px;display:flex;align-items:center;gap:7px}.legend{display:flex;gap:15px;font-size:12px;color:#587083;margin-top:15px}.dot{width:8px;height:8px;display:inline-block;border-radius:100%;background:#087b83;margin-right:4px}.dot.last{background:#e99b22}.data-section{background:white;padding:25px 30px;border-top:1px solid #dbe3e9}.tablewrap{overflow:auto;max-height:350px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:11px 14px;border-bottom:1px solid #e4ebf0;white-space:nowrap}th{background:#eff4f7;position:sticky;top:0}caption{text-align:left;font-size:12px;color:#587083;padding:0 0 15px}.popup{line-height:1.6}.popup strong{display:block}footer{font-size:12px;color:#587083;padding:18px 30px}a{color:#087b83}@media(max-width:760px){header{padding:18px}.layout{display:flex;flex-direction:column}aside{max-height:none;padding:20px;border:0}#map{height:55vh;min-height:350px}.stats{margin:12px 0}.tag{font-size:10px}h1{font-size:20px}.data-section{padding:20px}}
-</style></head><body>
+.replay{border-top:1px solid #dbe3e9;margin-top:18px;padding-top:12px}.replay h3{margin:6px 0}.replay input{width:100%}.replay-buttons{display:flex;gap:8px}.replay-buttons button{margin:8px 0}.dot.replaying{background:#854bc2}.legend{flex-wrap:wrap}#replay-position{min-height:3em}</style></head><body>
 <header><div><h1>AeroSafe <span style="font-weight:400;color:#aec8da">/ Trajectoires</span></h1><p>Explorer les positions enregistrées des aéronefs</p></div><span class="tag" id="source-tag">Historique</span></header>
 <main><div class="layout"><aside>
 <div class="eyebrow">Observations aériennes</div><h2>Une trajectoire à explorer</h2>
@@ -13,9 +13,19 @@
 <label for="search">Rechercher un aéronef</label><input id="search" type="search" placeholder="Indicatif ou identifiant ICAO24" autocomplete="off">
 <label for="aircraft">Sélection</label><select id="aircraft"><option value="">Vue d’ensemble</option></select>
 <div id="detail" aria-live="polite"><p class="note">Sélectionne un avion sur la carte ou dans la liste.</p></div>
+<section class="replay" aria-labelledby="replay-title">
+<h3 id="replay-title">Rejouer les observations</h3>
+<p class="muted" id="replay-help">Choisis un aéronef avec au moins deux positions.</p>
+<div class="replay-buttons"><button id="play" disabled>Lire</button><button id="restart" disabled>Au début</button></div>
+<label for="timeline">Instant du rejeu</label><input type="range" id="timeline" min="0" max="1" value="0" step="1" disabled>
+<p class="muted" id="replay-time">—</p>
+<label for="speed">Vitesse de lecture</label><select id="speed" disabled><option value="1">1×</option><option value="10">10×</option><option value="30" selected>30×</option><option value="60">60×</option></select>
+<p class="muted" id="replay-position"></p>
+<p class="muted">Le repère violet indique la dernière mesure atteinte dans le rejeu. Aucun déplacement intermédiaire n’est calculé.</p>
+</section>
 <button id="center">Recentrer la carte</button>
 <label class="check"><input type="checkbox" id="basemap" checked>Afficher le fond OpenStreetMap</label>
-<div class="legend"><span><i class="dot"></i>Position</span><span><i class="dot last"></i>Dernière connue</span></div>
+<div class="legend"><span><i class="dot"></i>Position</span><span><i class="dot last"></i>Dernière connue</span><span><i class="dot replaying"></i>Rejeu</span></div>
 <p class="note"><strong>Instantané historique</strong><br>La carte ne se met pas à jour automatiquement. Une ligne relie les mesures disponibles ; les interruptions de plus de 5 minutes ne sont pas reliées.</p>
 <p class="muted" id="generated"></p>
 </aside><div class="mapwrap"><div id="warning" role="status" hidden></div><div id="map" aria-label="Carte des positions aériennes"></div></div></div>
@@ -23,6 +33,9 @@
 <footer>Projet AeroSafe · Consultation locale · <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener">Signaler un problème de fond de carte</a></footer>
 <script type="application/json" id="flight-data">__AEROSAFE_DATA__</script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+__AEROSAFE_REPLAY__
+</script>
 <script>
 "use strict";
 const data=JSON.parse(document.getElementById("flight-data").textContent);
@@ -65,6 +78,7 @@ function options(){
 function center(){if(map&&group.getLayers().length)map.fitBounds(group.getBounds(),{padding:[35,35],maxZoom:11});}
 function select(id){selected=id;el("search").value="";options();el("aircraft").value=id;draw();}
 function draw(){
+ resetReplay(byId.get(selected));
  if(group)group.clearLayers();
  el("rows").replaceChildren();el("detail").replaceChildren();
  const a=byId.get(selected);
@@ -96,10 +110,55 @@ function draw(){
  for(const p of points){const row=document.createElement("tr");for(const value of [date(p.position_time),p.latitude_deg.toFixed(5),p.longitude_deg.toFixed(5),measure(p.baro_altitude_m,"m"),measure(p.velocity_mps,"m/s",1),measure(p.true_track_deg,"°",1)]){const cell=document.createElement("td");cell.textContent=value;row.append(cell);}el("rows").append(row);}
  }
  center();
+ if(replay&&replay.duration&&map)renderReplay();
 }
 el("search").addEventListener("input",options);
 el("aircraft").addEventListener("change",()=>{selected=el("aircraft").value;draw();});
 el("center").addEventListener("click",center);
 el("basemap").addEventListener("change",()=>{if(map){if(el("basemap").checked)tiles.addTo(map);else map.removeLayer(tiles);}});
+let replay=null,replayAircraft=null,replayMarker=null,playing=false,animation=null,lastFrame=null;
+function pauseReplay(){
+ playing=false;if(animation!==null)cancelAnimationFrame(animation);animation=null;lastFrame=null;
+ el("play").textContent="Lire";el("play").setAttribute("aria-pressed","false");
+}
+function resetReplay(a){
+ pauseReplay();if(replayMarker){replayMarker.remove();replayMarker=null;}
+ replayAircraft=a;replay=a?new ReplayClock(a.points):null;
+ const enabled=!!(map&&replay&&replay.duration>0);
+ for(const id of ["play","restart","timeline","speed"])el(id).disabled=!enabled;
+ el("timeline").max=replay?.duration||1;el("timeline").value=0;
+ el("replay-help").textContent=!map?"Rejeu indisponible : bibliothèque cartographique non chargée.":enabled?"Lecture historique, entre la première et la dernière observation.":"Choisis un aéronef avec au moins deux positions.";
+ el("replay-time").textContent="—";el("replay-position").textContent="";
+ if(enabled)renderReplay();
+}
+function renderReplay(){
+ const frame=replay.frame(),p=replayAircraft.points[frame.index];
+ el("timeline").value=replay.offset;
+ el("timeline").setAttribute("aria-valuetext",date(frame.time));
+ el("replay-time").textContent=date(frame.time)+(frame.ended?" · Fin":"");
+ el("replay-position").textContent=frame.gap?"Interruption : aucune nouvelle position depuis plus de 5 minutes.":"Mesure du "+date(p.position_time)+" · Altitude : "+measure(p.baro_altitude_m,"m")+" · Vitesse : "+measure(p.velocity_mps,"m/s",1);
+ if(frame.gap){if(replayMarker){replayMarker.remove();replayMarker=null;}return;}
+ if(!replayMarker)replayMarker=L.circleMarker([p.latitude_deg,p.longitude_deg],{radius:10,color:"#fff",weight:3,fillColor:"#854bc2",fillOpacity:1}).addTo(map);
+ replayMarker.setLatLng([p.latitude_deg,p.longitude_deg]).bindPopup(popup(replayAircraft,p));
+ replayMarker.bringToFront();
+}
+function tick(now){
+ if(!playing)return;
+ if(lastFrame!==null)replay.advance(now-lastFrame,Number(el("speed").value));
+ lastFrame=now;renderReplay();
+ if(replay.frame().ended){pauseReplay();return;}
+ animation=requestAnimationFrame(tick);
+}
+el("play").addEventListener("click",()=>{
+ if(playing){pauseReplay();return;}
+ if(!replay||!replay.duration)return;
+ if(replay.frame().ended)replay.seek(0);
+ playing=true;el("play").textContent="Pause";el("play").setAttribute("aria-pressed","true");
+ renderReplay();animation=requestAnimationFrame(tick);
+});
+el("restart").addEventListener("click",()=>{pauseReplay();replay.seek(0);renderReplay();});
+el("timeline").addEventListener("input",()=>{pauseReplay();replay.seek(Number(el("timeline").value));renderReplay();});
+el("speed").addEventListener("change",()=>{lastFrame=null;});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)pauseReplay();});
 options();draw();
 </script></body></html>

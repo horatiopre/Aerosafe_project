@@ -62,7 +62,7 @@ Aucune tuile n’est préchargée ni téléchargée pour un usage hors connexion
 - Période maximale : 168 heures ; maximum 50 000 positions par export.
 - Le tableau montre les 500 derniers points de l’avion sélectionné, avec une indication lorsque cette limite est atteinte.
 - Les heures sont en UTC, l’altitude en mètres et la vitesse en mètres par seconde.
-- Les alertes, l’authentification et le rejeu animé ne sont pas encore raccordés.
+- Les alertes et l’authentification ne sont pas encore raccordées.
 - La vue d’ensemble et la sélection d’une trajectoire ont été confirmées par captures sur le poste utilisateur. Les infobulles et le tableau détaillé restent à vérifier manuellement.
 
 ## Tests
@@ -75,3 +75,26 @@ Le code d’affichage est dans `aerosafe/templates/map.html`. Le contenu embarqu
 
 Références : [Leaflet 1.9.4](https://leafletjs.com/reference-1.9.4.html) et [conditions des tuiles OpenStreetMap](https://operations.osmfoundation.org/policies/tiles/).
 
+
+## Rejeu des observations
+Sélectionner un avion avec au moins deux positions, puis cliquer sur **Lire**.
+Le repère violet avance selon les heures enregistrées. Le curseur permet de choisir un instant ; son déplacement met la lecture en pause. **Au début** revient à la première mesure. Les vitesses proposées sont 1×, 10×, 30× et 60× (30 secondes historiques par seconde à 30×).
+
+Le repère conserve la dernière position atteinte, sans interpolation. Au-delà de cinq minutes sans nouvelle mesure, il disparaît et une interruption est indiquée ; il revient à la mesure suivante. Le point orange conserve sa signification de dernière position de toute la trajectoire. L’altitude et la vitesse du rejeu figurent sous les commandes ; les données de la fiche principale concernent toujours la dernière position connue.
+
+La lecture s’arrête en fin de trajectoire, en changeant d’avion ou lorsque l’onglet est masqué. Cliquer sur Lire en fin de trajectoire recommence au début. Les commandes sont désactivées en vue d’ensemble, avec un seul point ou sans Leaflet.
+
+Vérification manuelle : Lire, Pause, déplacement du curseur, changement de vitesse, retour au début, fin de lecture puis changement d’avion. Vérifier aussi un avion à un seul point. Cette nouvelle interface reste à vérifier dans le navigateur sur le poste utilisateur.
+
+Tests du moteur temporel (Node.js, facultatif pour utiliser la carte) :
+```powershell
+node --test tests/replay.test.cjs
+```
+
+## Continuer dans le dépôt partagé
+Depuis `contributions/alexandre`, utiliser `docker compose -p aerosafe` pour retrouver le projet Docker et le volume de la première version locale. Copier le `.env` local de cette version si nécessaire ; ne pas le publier. Le dossier doit contenir la même configuration de connexion. Ne pas lancer en parallèle les commandes de deux copies du projet.
+```powershell
+docker compose -p aerosafe run --build --rm app map
+python -m http.server 8001 --bind 127.0.0.1 --directory maps
+```
+Ouvrir http://127.0.0.1:8001/carte.html. Cette adresse sert la carte exportée dans la contribution. Les anciens fichiers du dossier AeroSafe restent indépendants.
