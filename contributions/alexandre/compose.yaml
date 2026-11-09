@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-aerosafe}
+      POSTGRES_USER: ${POSTGRES_USER:-aerosafe}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copier .env.example vers .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  app:
+    build: .
+    profiles: ["tools"]
+    environment:
+      OPENSKY_CLIENT_ID: ${OPENSKY_CLIENT_ID:-}
+      OPENSKY_CLIENT_SECRET: ${OPENSKY_CLIENT_SECRET:-}
+      PGHOST: db
+      PGPORT: "5432"
+      PGDATABASE: ${POSTGRES_DB:-aerosafe}
+      PGUSER: ${POSTGRES_USER:-aerosafe}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Copier .env.example vers .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data:ro
+      - ./captures:/app/captures
+      - ./maps:/app/maps
+
+volumes:
+  postgres_data:
